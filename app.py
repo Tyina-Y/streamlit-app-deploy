@@ -2,9 +2,15 @@ from dotenv import load_dotenv
 load_dotenv()
 
 import streamlit as st
+import os
 
 from langchain_openai import ChatOpenAI
 from langchain_core.prompts import ChatPromptTemplate
+
+# Check if OpenAI API key is set
+if "OPENAI_API_KEY" not in os.environ and "OPENAI_API_KEY" not in st.secrets:
+    st.error("⚠️ OpenAI APIキーが設定されていません。Streamlit Cloudの場合は、'Manage app' → 'Settings' → 'Secrets'で設定してください。")
+    st.stop()
 
 st.title("カウンセターアプリ")
 input_message = st.text_input(label="質問領域ボタンを選択して、質問を入力してください。")
@@ -40,14 +46,22 @@ def get_childcare_nutrition_advice(param):
 
 if st.button("育児ストレスについて質問する"):
     if text_count > 0:
-        result = get_childcare_stress_advice(input_message)
-        st.write(f"回答: **{result}**")
+        try:
+            with st.spinner("回答を生成中..."):
+                result = get_childcare_stress_advice(input_message)
+            st.write(f"回答: **{result}**")
+        except Exception as e:
+            st.error(f"エラーが発生しました: {str(e)}")
     else:
         st.warning("質問を入力してください。")
 
 if st.button("子どもの栄養について質問する"):
     if text_count > 0:
-        result = get_childcare_nutrition_advice(input_message)
-        st.write(f"回答: **{result}**")
+        try:
+            with st.spinner("回答を生成中..."):
+                result = get_childcare_nutrition_advice(input_message)
+            st.write(f"回答: **{result}**")
+        except Exception as e:
+            st.error(f"エラーが発生しました: {str(e)}")
     else:
         st.warning("質問を入力してください。")
